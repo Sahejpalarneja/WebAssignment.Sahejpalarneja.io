@@ -3,9 +3,13 @@ function Todo(name, state) {
   this.state = state;
 }
 
-var todos = [];
+var todos = JSON.parse(localStorage.getItem("todos"));
+if(todos === null)
+  todos =[];
 var states = ["active", "inactive", "done"];
-var count = [0,0,0];
+var count = JSON.parse(localStorage.getItem("count"));
+if(count === null)
+  count = [0,0,0];
 var tabs = ["all"].concat(states);
 var currentTab = "all";
 
@@ -75,11 +79,11 @@ function renderTodos() {
                 "Are you sure you want to delete the item titled " + todo.name
               )
             ) {
-              if(todo.state === "active")
+              if(todo.state === "active" && count[0]>0)
                 count[0]--;
-              else if(todo.state === "inactive")
+              else if(todo.state === "inactive" && count[1]>0)
                 count[1]--;
-              else
+              else if(todo.state === "done" && count[2]>0)
                 count[2]--;
               todos.splice(todos.indexOf(todo), 1);
               renderTodos();
@@ -177,10 +181,14 @@ function renderTodos() {
       div1.appendChild(div3);
 
       todoList.appendChild(div1);
+      localStorage.setItem("todos",JSON.stringify(todos));
+      localStorage.setItem("count",JSON.stringify(count));
     });
 }
 
 renderTodos();
+
+
 
 function selectTab(element) {
   var tabName = element.attributes["data-tab-name"].value;
