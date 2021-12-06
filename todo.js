@@ -5,18 +5,23 @@ function Todo(name, state) {
 
 var todos = [];
 var states = ["active", "inactive", "done"];
+var count = [0,0,0];
 var tabs = ["all"].concat(states);
 var currentTab = "all";
 
 var form = document.getElementById("new-todo-form");
 var input = document.getElementById("new-todo-title");
 
+
 form.onsubmit = function(event) {
   event.preventDefault();
   if (input.value && input.value.length) {
     todos.push(new Todo(input.value, "active"));
     input.value = "";
+    count[0] = count[0]+1;
     renderTodos();
+    
+    
   }
 };
 
@@ -24,10 +29,17 @@ var buttons = [
   { action: "done", icon: "ok" },
   { action: "active", icon: "plus" },
   { action: "inactive", icon: "minus" },
-  { action: "remove", icon: "trash" }
+  { action: "remove", icon: "trash" },
+  { action:"move up", icon:"arrow-up"},
+  { action:"move down", icon:"arrow-down" }
 ];
 function renderTodos() {
   var todoList = document.getElementById("todo-list");
+  document.getElementById('all').innerHTML = count[0]+count[1]+count[2];
+  document.getElementById('active').innerHTML= count[0];
+  document.getElementById('inactive').innerHTML = count[1];
+  document.getElementById('done').innerHTML = count[2];
+
   todoList.innerHTML = "";
   todos
     .filter(function(todo) {
@@ -63,14 +75,99 @@ function renderTodos() {
                 "Are you sure you want to delete the item titled " + todo.name
               )
             ) {
+              if(todo.state === "active")
+                count[0]--;
+              else if(todo.state === "inactive")
+                count[1]--;
+              else
+                count[2]--;
               todos.splice(todos.indexOf(todo), 1);
               renderTodos();
             }
           };
-        } else {
+        } 
+        else if(button.action === "move up")
+        {
+          btn.title = "Move up";
+          btn.onclick = function(){
+            var index = todos.findIndex(x=>x.name == todo.name);
+            if(index != 0)
+            {
+              var temp = todos[index-1];
+              todos[index-1] = todo;
+              todos[index] = temp;
+            }
+            renderTodos();
+              
+          }
+        }
+        else if(button.action === "move down")
+        {
+          btn.title = "Move down";
+          var length = todos.length;
+          btn.onclick = function(){
+            var index = todos.findIndex(x=>x.name==todo.name);
+            if(index != length-1)
+            {
+              var temp = todos[index+1];
+              todos[index+1] = todo;
+              todos[index] = temp;
+            }
+            renderTodos();
+          }
+          
+
+
+        }
+        
+        else {
           btn.title = "Mark as " + button.action;
           btn.onclick = function() {
-            todo.state = button.action;
+          if(button.action === "active")
+          {
+            if(todo.state === "inactive")
+            {
+              count[1]--;
+              count[0]++;
+            }
+            else if(todo.state === "done")
+            {
+              count[2]--;
+              count[0]++;
+            }
+            todo.state =button.action
+          }
+          else if(button.action === "inactive")
+          {
+            if(todo.state === "active")
+            {
+              count[0]--;
+              count[1]++;
+            }
+            else if(todo.state === "done")
+            {
+              count[2]--;
+              count[1]++;
+            }
+            todo.state = button.action
+            
+          }
+          else if(button.action === "done")
+          {
+            if(todo.state === "active")
+            {
+              count[0]--;
+              count[2]++;
+            }
+            else if(todo.state === "inactive")
+            {
+              count[1]--;
+              count[2]++;
+            }
+            todo.state = button.action
+          }
+          
+           
             renderTodos();
           };
         }
@@ -95,3 +192,4 @@ function selectTab(element) {
   element.classList.add("active");
   renderTodos();
 }
+
